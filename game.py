@@ -256,7 +256,6 @@ class Obstacle:
         #         .   .                                     .
         #         v   v                                     v
         #        (x) (0)                             (screen.width)       
-        #        (x)     (bird.linear.position[0])
         #
         G = self.upper_part[2]
         x = G[0]
