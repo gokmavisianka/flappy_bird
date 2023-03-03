@@ -27,7 +27,69 @@ def hypotenuse(Vector2D):
     return (x ** 2 + y ** 2) ** 0.5
 
 
-class Floor:
+class Linear:
+    def __init__(self):
+        self.position = np.array((0, 0), dtype=float)
+        self.velocity = np.array((0, 0), dtype=float)
+        self.acceleration = np.array((0, -2.5), dtype=float)
+
+
+class Text:
+    def __init__(self, base_string, function, color=(255, 0, 0)):
+        # base_string can be "FPS: " or "Score: " to represent the remaining part.
+        self.base_string = base_string
+        self.color = color
+        # function is used to get the remaining part (It can be fps value or score etc.) of the string.
+        # So {base_string + remaining} will be shown on the screen.
+        self.function = function
+        # Size of the font can be changed.
+        self.font = pygame.font.SysFont("Helvetica", 32)
+
+    def show(self, display, position, string=None):
+        # If a string is given, use that. Otherwise, use the base_string and add the remaining part to it.
+        if string is None:
+            string = self.base_string
+            remaining = self.function()
+            # Check if the type of the remaining part is str. If not, Convert it to the str type before merging strings.
+            if type(remaining) is str:
+                string += remaining
+            else:
+                string += str(remaining)
+        text = self.font.render(string, True, self.color)
+        display.blit(text, position)
+
+
+class Screen:
+    def __init__(self, background_color=(100, 100, 100), resolution=(1000, 750)):
+        self.background_color = background_color
+        self.width, self.height = resolution
+        self.display = pygame.display.set_mode(resolution)
+        self.FPS = self.FPS()
+
+    def fill(self, color=None):
+        if color is None:
+            color = self.background_color
+        # fill the screen with specific color.
+        self.display.fill(color)
+
+    @staticmethod
+    def update():
+        # Update the whole window.
+        pygame.display.flip()
+
+    class FPS:
+        def __init__(self):
+            self.clock = pygame.time.Clock()
+            self.text = Text(base_string="FPS: ", function=self.get)
+
+        def set(self, value):
+            self.clock.tick(value)
+
+        def get(self):
+            return int(self.clock.get_fps())  # clock.get_fps() returns a float.
+
+
+class Floor:  # Static Obstacle.
     def __init__(self, color=(0, 0, 0)):
         self.color = color
     
@@ -45,7 +107,7 @@ class Floor:
             return False
 
 
-class Ceiling:
+class Ceiling:  # Static Obstacle.
     def __init__(self, color(0, 0, 0)):
         self.x, self.y = 0,
 
@@ -63,7 +125,7 @@ class Ceiling:
             return False
 
 
-class Obstacles:
+class Obstacles:  # Dynamic Obstacle.
     def __init__(self):
         self.elements = []
 
@@ -201,13 +263,6 @@ class Obstacle:
         return False                                                                                          
 
 
-class Linear:
-    def __init__(self):
-        self.position = np.array((0, 0), dtype=float)
-        self.velocity = np.array((0, 0), dtype=float)
-        self.acceleration = np.array((0, -2.5), dtype=float)
-
-
 class Bird:
     def __init__(self, position, radius):
         self.color = random_color()
@@ -217,4 +272,11 @@ class Bird:
     
     def draw(self):
         pygame.draw.circle(screen.display, self.color, self.lineer.position, self.radius)
-    
+
+    def jump(self):
+        self.linear.velocity[1] = 50
+
+    def update(self):
+        self.linear.velocity += self.linear.acceleration
+        self.linear.position += self.linear.velocity
+          
