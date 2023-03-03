@@ -6,7 +6,7 @@ from random import randint
 # The horizontal distance between two obstacles,
 distance_between_obstacles = 300
 
-# The minimum height of the any part of an obstacle,
+# The minimum height of any part of an obstacle,
 minimum_height = 100
 
 # The vertical distance between lower and upper parts of an obstacle,
@@ -79,18 +79,18 @@ class Obstacles:
         width, height = 100, randint(minimum_height, screen.height - gap - minimum_height)
         # Now, create the corners of lower part, gate and upper part.
         #
-        # ----------A-------B----------
-        #           | upper |
-        #           | part  |
-        #           |       |
-        #           D-------C
+        # ----------A------B----------
+        #           | upper|
+        #           | part |
+        #           |      |
+        #           D------C
         #    v^^v   
-        #  >(Bird)>   >gate   ->   ->
+        #  >(Bird)>   gate   ->   ->
         #    ^vv^          
-        #           E-------F
-        #           |       |
-        #           | lower |
-        #           | part  |
+        #           E------F
+        #           |      |
+        #           | lower|
+        #           | part |
         # ----------H-------G----------
         #
         A = (x, y)
@@ -135,12 +135,40 @@ class Obstacle:
     def move(self):
         # Apply the velocity for all corners.
         self.lower_part += self.linear.velocity
-        self.upper_part += self.linear.velocity        
+        self.upper_part += self.linear.velocity
+
+    def check_position(self):
+        # This function is only applied for the last obstacle in the obstacles.elements.
+        # If the horizontal distance between the point G and the screen width is less than
+        # or equal to the distance_between_obstacles, then create a new obstacle.
+        #          
+        # -A------B--------------------------------------A------B-
+        #  | upper|                                      | upper|
+        #  | part |                                      | part |
+        #  |      |                                      |      |
+        #  D------C                                      D------C 
+        #         .                                      .
+        #         <~~~~~ distance_between_obstacles ~~~~~> 
+        #         .                                      .      
+        #  D------F                                      D------F
+        #  |      |                                      |      |
+        #  | lower|                                      | lower| 
+        #  | part |                                      | part |
+        # -H------G--------------------------------------H------G-
+        #         |                                      |
+        #         |                                      |
+        #         v                                      v
+        #        (x)                              (screen.width)
+        #
+        G = self.lower_part[2]
+        x = G[0]
+        if screen.width - x <= distance_between_obstacles:
+            obstacles.create()
 
     def check_collision(self, bird):
         # Six different corners in total will be used to check collision.
         #
-        # ------------A-------+ . . . . . +
+        # +-----------A-------+-----------+
         # .           | upper |           .
         # .    (1)    | part  |           . if bird is in the area (1), use the corners A & D.
         # .           |       |           .
@@ -152,7 +180,7 @@ class Obstacle:
         # .           |       |           .
         # .    (3)    | lower |           . if bird is in the area (5), use the corners C, & F.
         # .           | part  |           .
-        # ------------H-------+ . . . . . +
+        # +-----------H-------+-----------+
         #
         A, B, C, D = self.upper_part
         E, F, G, H = self.lower_part
@@ -186,4 +214,7 @@ class Bird:
         self.linear = Linear()
         self.linear.position[:] = position
         self.radius = radius
-   
+    
+    def draw(self):
+        pygame.draw.circle(screen.display, self.color, self.lineer.position, self.radius)
+    
