@@ -150,6 +150,9 @@ class Obstacles:  # Dynamic Obstacle.
         for obstacle in self.elements:
             obstacle.move()
 
+    def delete_all(self):
+        self.elements = []
+
     def create(self):
         # x should be equal to or higher than screen width, or it will appear suddenly on screen.
         # y should be 0 or the height value of the ceiling.
@@ -369,6 +372,10 @@ class Bird:
     def jump(self):
         self.linear.velocity[1] = -9
 
+    def reset(self):
+        self.linear.position[:] = (150, 350)
+        self.linear.velocity[1] = 0
+
     def update(self):
         self.linear.velocity += self.linear.acceleration
         self.linear.position += self.linear.velocity
@@ -391,6 +398,14 @@ class Keyboard:
                     quit()
 
 
+def restart():
+    score.value = 0
+    bird.reset()
+    obstacles.delete_all()
+    obstacles.create()
+    print("Collision!")
+
+
 screen = Screen()
 bird = Bird(position=(150, 350), radius=30)
 obstacles = Obstacles()
@@ -410,11 +425,11 @@ while True:
     bird.update()
     bird.draw()
     if floor.check_collision(bird) or ceiling.check_collision(bird):
-        print("Collision!")
+        restart()
     for obstacle in obstacles.elements[:2]:
         obstacle.check_pass(bird)
         if obstacle.check_collision(bird):
-            print("Collision!")
+            restart()
     keyboard.update()
     screen.FPS.set(60)
     screen.FPS.text.show(screen.display, position=(0, 0))
